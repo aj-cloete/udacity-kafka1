@@ -1,0 +1,15 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+cython = "*"
+confluent-kafka = {version = "==1.1.0", extras = ["avro"]}
+pandas = "==0.24.2"
+requests = "==2.22.0"
+
+[dev-packages]
+
+[requires]
+python_version = "3.7"
