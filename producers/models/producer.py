@@ -3,7 +3,6 @@ import logging
 import time
 
 
-from confluent_kafka import avro
 from confluent_kafka.admin import AdminClient, NewTopic
 from confluent_kafka.avro import AvroProducer
 
@@ -34,8 +33,6 @@ class Producer:
         self.num_partitions = num_partitions
         self.num_replicas = num_replicas
 
-        # DONE TODO: Configure the broker properties below. Make sure to reference the project README
-        # and use the Host URL for Kafka and Schema Registry!
         self.broker_properties = {
             "bootstrap.servers": BROKER_URLS,
             "schema.registry.url": SCHEMA_REGISTRY_URL,
@@ -46,16 +43,16 @@ class Producer:
             self.create_topic()
             Producer.existing_topics.add(self.topic_name)
 
-        # DONE TODO: Configure the AvroProducer
         self.producer = AvroProducer(
-            config=self.config,
+            config=self.broker_properties,
         )
 
     def create_topic(self):
         """Creates the producer topic if it does not already exist"""
-        # DONE TODO: Write code that creates the topic for this producer if it does not already exist on
-        # the Kafka Broker.
-        client = AdminClient(self.broker_properties)
+        client = AdminClient({key: value for key, value in self.broker_properties.items()
+                              if not key == "schema.registry.url"})
+        if client.list_topics(self.topic_name):
+            return
         futures = client.create_topics([NewTopic(
             topic=self.topic_name,
             num_partitions=self.num_partitions,
@@ -65,17 +62,14 @@ class Producer:
             try:
                 future.result()
             except Exception as e:
-                logger.info("exiting production loop")
-
-    def time_millis(self):
-        return int(round(time.time() * 1000))
+                logger.info(f"exiting production loop: {str(e)}")
 
     def close(self):
         """Prepares the producer for exit by cleaning up the producer"""
-        # DONE TODO: Write cleanup code for the Producer here
         self.producer.flush()
         logger.info("producer closed")
 
-    def time_millis(self):
+    @staticmethod
+    def time_millis():
         """Use this function to get the key for Kafka Events"""
         return int(round(time.time() * 1000))

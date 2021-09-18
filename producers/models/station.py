@@ -15,7 +15,6 @@ class Station(Producer):
     """Defines a single station"""
 
     key_schema = avro.load(f"{Path(__file__).parents[0]}/schemas/arrival_key.json")
-
     value_schema = avro.load(f"{Path(__file__).parents[0]}/schemas/arrival_value.json")
 
     def __init__(self, station_id, name, color, direction_a=None, direction_b=None):
@@ -28,16 +27,16 @@ class Station(Producer):
             .replace("'", "")
         )
 
-        topic_name = f"com.udacity.arrival.{station_name}"
+        topic_name = f"com.udacity.station.{station_name}"
         super().__init__(
             topic_name,
             key_schema=Station.key_schema,
             value_schema=Station.value_schema,
             num_partitions=1,
-            num_replicas=2,
+            num_replicas=1,
         )
 
-        self.station_id = int(station_id)
+        self.station_id = station_id
         self.color = color
         self.dir_a = direction_a
         self.dir_b = direction_b
@@ -48,29 +47,30 @@ class Station(Producer):
     def run(self, train, direction, prev_station_id, prev_direction):
         """Simulates train arrivals at this station"""
         self.producer.produce(
-           topic=self.topic_name,
-           key={"timestamp": self.time_millis()},
-           value={
-               "station_id": self.station_id,
-               "line": self.color,
-               "train_id": train.train_id,
-               "direction": direction,
-               "prev_station_id": prev_station_id,
-               "prev_direction": prev_direction
-           },
+            topic=self.topic_name,
+            key={"timestamp": self.time_millis()},
+            value={
+                "station_id": self.station_id,
+                "train_id": train.train_id,
+                "direction": direction,
+                "line": self.color.name,
+                "train_status": train.status.name,
+                "prev_station_id": prev_station_id,
+                "prev_direction": prev_direction
+            },
+            key_schema=Station.key_schema,
+            value_schema=Station.value_schema
         )
 
     def __str__(self):
-        return "Station | {:^5} | {:<30} | Direction A: | {:^5} | " \
-               "departing to {:<30} | Direction B: | {:^5} | departing to {:<30} | "\
-            .format(
-                self.station_id,
-                self.name,
-                self.a_train.train_id if self.a_train is not None else "---",
-                self.dir_a.name if self.dir_a is not None else "---",
-                self.b_train.train_id if self.b_train is not None else "---",
-                self.dir_b.name if self.dir_b is not None else "---",
-            )
+        return "Station | {:^5} | {:<30} | Direction A: | {:^5} | departing to {:<30} | Direction B: | {:^5} | departing to {:<30} | ".format(
+            self.station_id,
+            self.name,
+            self.a_train.train_id if self.a_train is not None else "---",
+            self.dir_a.name if self.dir_a is not None else "---",
+            self.b_train.train_id if self.b_train is not None else "---",
+            self.dir_b.name if self.dir_b is not None else "---",
+        )
 
     def __repr__(self):
         return str(self)
