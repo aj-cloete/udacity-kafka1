@@ -67,6 +67,7 @@ class Producer:
     def close(self):
         """Prepares the producer for exit by cleaning up the producer"""
         self.producer.flush()
+        self.producer.close()
         logger.info("producer closed")
 
     @staticmethod
