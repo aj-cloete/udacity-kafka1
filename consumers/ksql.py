@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS turnstile (
     station_id INT,
     station_name VARCHAR,
     line VARCHAR
-) WITH (KAFKA_TOPIC='com.udacity.turnstiles',
+) WITH (KAFKA_TOPIC='org.chicago.cta.turnstiles',
         VALUE_FORMAT='AVRO',
         KEY='station_id'
 );
