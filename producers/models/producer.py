@@ -49,9 +49,8 @@ class Producer:
 
     def create_topic(self):
         """Creates the producer topic if it does not already exist"""
-        client = AdminClient({key: value for key, value in self.broker_properties.items()
-                              if not key == "schema.registry.url"})
-        if client.list_topics(self.topic_name):
+        client = AdminClient({key: value for key, value in self.broker_properties.items() if "schema.registry.url" not in key})
+        if client.list_topics(self.topic_name, timeout=5):
             return
         futures = client.create_topics([NewTopic(
             topic=self.topic_name,
@@ -66,7 +65,6 @@ class Producer:
 
     def close(self):
         """Prepares the producer for exit by cleaning up the producer"""
-        self.producer.flush()
         self.producer.close()
         logger.info("producer closed")
 
