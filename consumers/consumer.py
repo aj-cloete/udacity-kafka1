@@ -38,7 +38,7 @@ class KafkaConsumer:
             "bootstrap.servers": BROKER_URLS,
             "schema.registry.url": SCHEMA_REGISTRY_URL,
             "group.id": "0",
-            "auto.offset.reset": "earliest",
+            "auto.offset.reset": "earliest" if offset_earliest else "latest",
         }
 
         if is_avro is True:

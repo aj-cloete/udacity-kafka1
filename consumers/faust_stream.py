@@ -45,7 +45,7 @@ table = app.Table(
 @app.agent(topic)
 async def station_transformation(stations):
     async for station in stations:
-        table['station_id'] = TransformedStation(
+        table[station.station_id] = TransformedStation(
             station_id=station.station_id,
             station_name=station.station_name,
             order=station.order,
