@@ -49,20 +49,26 @@ class Producer:
 
     def create_topic(self):
         """Creates the producer topic if it does not already exist"""
-        client = AdminClient({key: value for key, value in self.broker_properties.items()
-                              if "schema.registry.url" not in key})
-        if client.list_topics(self.topic_name, timeout=5):
-            return
-        futures = client.create_topics([NewTopic(
-            topic=self.topic_name,
-            num_partitions=self.num_partitions,
-            replication_factor=self.num_replicas)
-        ])
-        for _, future in futures.items():
-            try:
-                future.result()
-            except Exception as e:
-                logger.info(f"exiting production loop: {str(e)}")
+        try:
+            client = AdminClient({key: value for key, value in self.broker_properties.items()
+                                  if "schema.registry.url" not in key})
+            if client.list_topics(self.topic_name, timeout=5):
+                return
+            futures = client.create_topics([NewTopic(
+                topic=self.topic_name,
+                num_partitions=self.num_partitions,
+                replication_factor=self.num_replicas)
+            ])
+            for _, future in futures.items():
+                try:
+                    future.result()
+                except Exception as e:
+                    logger.info(f"exiting production loop: {str(e)}")
+        except Exception as e:
+            print(f"exception when creating topic: {self.topic_name}")
+            print(e)
+            print("retrying")
+            self.create_topic()
 
     def close(self):
         """Prepares the producer for exit by cleaning up the producer"""

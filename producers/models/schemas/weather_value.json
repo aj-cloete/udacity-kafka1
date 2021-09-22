@@ -4,7 +4,7 @@
   "name": "weather.value",
   "fields": [{
     "name": "temperature",
-    "type": "double"
+    "type": "float"
     },
     {
       "name": "status",
